@@ -23,13 +23,13 @@ from functions.utils import (
 
 # Load environment variables
 # Using Streamlit community:
-DEEPSEEK_API_KEY = st.secrets("DEEPSEEK_API_KEY")
+# DEEPSEEK_API_KEY = st.secrets("DEEPSEEK_API_KEY")
 
 # If there is a file config.env in the folder config
-# load_dotenv(Path("config/config.env"))
-# DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
-# if not DEEPSEEK_API_KEY:
-#    raise ValueError("DEEPSEEK_API_KEY não encontrada. Por favor, defina-a nas variáveis de ambiente.")
+load_dotenv(Path("config/config.env"))
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
+if not DEEPSEEK_API_KEY:
+    raise ValueError("DEEPSEEK_API_KEY não encontrada. Por favor, defina-a nas variáveis de ambiente.")
 
 # Load the VectorStore index from pickle
 with open("faiss_index/vectorstore.pkl", "rb") as arquivo:
