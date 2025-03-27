@@ -26,7 +26,7 @@ from functions.utils import (
 
 # Load environment variables
 # Using Streamlit community:
-DEEPSEEK_API_KEY = st.secrets("DEEPSEEK_API_KEY")
+DEEPSEEK_API_KEY = st.secrets["DEEPSEEK_API_KEY"]
 
 # If there is a file config.env in the folder config
 # load_dotenv(Path("config/config.env"))
