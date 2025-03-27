@@ -1,0 +1,15 @@
+# Core libraries
+streamlit
+requests
+python-dotenv
+torch
+
+# LangChain and related libraries
+langchain
+
+# FAISS for vector similarity search
+faiss-cpu
+
+# If these are custom or third-party modules available via PyPI:
+langchain_community
+langchain_huggingface
