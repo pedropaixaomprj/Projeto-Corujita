@@ -39,7 +39,10 @@ if not DEEPSEEK_API_KEY:
 
 # Loading from faiss_index
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-vectorstore = FAISS.load_local("./faiss_index", embedding_model, allow_dangerous_deserialization=True) # Nesse caso, não é "dangerous" porque eu mesmo gerei os indexes
+
+vectorstore = FAISS.load_local("./faiss_index",
+                                embedding_model,
+                                allow_dangerous_deserialization=True) # Nesse caso, não é "dangerous" porque eu mesmo gerei os indexes
 recuperador = VectorStoreRetriever(vectorstore=vectorstore)
 
 # Streamlit UI

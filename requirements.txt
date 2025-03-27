@@ -3,6 +3,7 @@ streamlit
 requests
 python-dotenv
 torch
+sentence-transformers
 
 # LangChain and related libraries
 langchain
