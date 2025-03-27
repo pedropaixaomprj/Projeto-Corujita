@@ -5,7 +5,8 @@ import pickle
 from pathlib import Path
 from dotenv import load_dotenv
 # import torch
-# from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores.base import VectorStoreRetriever
 
 # Import everything from utils.py
@@ -32,9 +33,13 @@ if not DEEPSEEK_API_KEY:
     raise ValueError("DEEPSEEK_API_KEY não encontrada. Por favor, defina-a nas variáveis de ambiente.")
 
 # Load the VectorStore index from pickle
-with open("faiss_index/vectorstore.pkl", "rb") as arquivo:
-    vectorstore = pickle.load(arquivo)
-    recuperador = VectorStoreRetriever(vectorstore=vectorstore)
+# with open("faiss_index/vectorstore.pkl", "rb") as arquivo:
+#    vectorstore = pickle.load(arquivo)
+#    recuperador = VectorStoreRetriever(vectorstore=vectorstore)
+
+# Loading from faiss_index
+vectorstore = FAISS.load_local("./faiss_index", embedding_model)
+recuperador = VectorStoreRetriever(vectorstore=vectorstore)
 
 # Streamlit UI
 st.set_page_config(page_title="Corujita - Chatbot", page_icon="🦉")
