@@ -5,9 +5,11 @@ import pickle
 from pathlib import Path
 from dotenv import load_dotenv
 # import torch
+
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores.base import VectorStoreRetriever
+from sentence_transformers import SentenceTransformer
 
 # Import everything from utils.py
 from functions.utils import (
@@ -24,25 +26,31 @@ from functions.utils import (
 
 # Load environment variables
 # Using Streamlit community:
-# DEEPSEEK_API_KEY = st.secrets("DEEPSEEK_API_KEY")
+DEEPSEEK_API_KEY = st.secrets("DEEPSEEK_API_KEY")
 
 # If there is a file config.env in the folder config
-load_dotenv(Path("config/config.env"))
-DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
-if not DEEPSEEK_API_KEY:
-    raise ValueError("DEEPSEEK_API_KEY não encontrada. Por favor, defina-a nas variáveis de ambiente.")
+# load_dotenv(Path("config/config.env"))
+# DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
+# if not DEEPSEEK_API_KEY:
+#     raise ValueError("DEEPSEEK_API_KEY não encontrada. Por favor, defina-a nas variáveis de ambiente.")
 
 # Load the VectorStore index from pickle
 # with open("faiss_index/vectorstore.pkl", "rb") as arquivo:
 #    vectorstore = pickle.load(arquivo)
 #    recuperador = VectorStoreRetriever(vectorstore=vectorstore)
 
-# Loading from faiss_index
+###############################################################################################
+##### NÃO ESTÁ CARREGANDO O MODELO MULTILÍNGUE CORRETAMENTE: ESTÁ CARREGANDO MEAN_POOLING #####
+###############################################################################################
+
+# Loading embedding model
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 
+# Loading from faiss_index
 vectorstore = FAISS.load_local("./faiss_index",
                                 embedding_model,
                                 allow_dangerous_deserialization=True) # Nesse caso, não é "dangerous" porque eu mesmo gerei os indexes
+
 recuperador = VectorStoreRetriever(vectorstore=vectorstore)
 
 # Streamlit UI
