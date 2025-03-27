@@ -38,6 +38,7 @@ if not DEEPSEEK_API_KEY:
 #    recuperador = VectorStoreRetriever(vectorstore=vectorstore)
 
 # Loading from faiss_index
+embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 vectorstore = FAISS.load_local("./faiss_index", embedding_model)
 recuperador = VectorStoreRetriever(vectorstore=vectorstore)
 
