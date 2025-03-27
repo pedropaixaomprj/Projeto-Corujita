@@ -60,6 +60,8 @@ def load_vectorstore():
     embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
     return VectorStoreRetriever(vectorstore=vectorstore)
 
+recuperador = load_vectorstore()
+
 def main():
     # Layout header with image and title
     co1, co2, co3, co4, co5 = st.columns(5)
