@@ -44,17 +44,21 @@ DEEPSEEK_API_KEY = st.secrets["DEEPSEEK_API_KEY"]
 ###############################################################################################
 
 # Loading embedding model
-embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-
+# embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 # Loading from faiss_index
-vectorstore = FAISS.load_local("./faiss_index",
-                                embedding_model,
-                                allow_dangerous_deserialization=True) # Nesse caso, não é "dangerous" porque eu mesmo gerei os indexes
-
-recuperador = VectorStoreRetriever(vectorstore=vectorstore)
+# vectorstore = FAISS.load_local("./faiss_index",
+#                                embedding_model,
+#                                allow_dangerous_deserialization=True) # Nesse caso, não é "dangerous" porque eu mesmo gerei os indexes
+# recuperador = VectorStoreRetriever(vectorstore=vectorstore)
 
 # Streamlit UI
 st.set_page_config(page_title="Corujita - Chatbot", page_icon="🦉")
+
+# Load the VectorStore index from pickle
+@st.cache_resource
+def load_vectorstore():
+    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    return VectorStoreRetriever(vectorstore=vectorstore)
 
 def main():
     # Layout header with image and title
