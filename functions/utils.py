@@ -9,11 +9,6 @@ import torch
 # (Optional) Avoid conflicts with Torch modules
 torch.classes.__path__ = []
 
-# Load the VectorStore index from SentenceTransformers
-def load_vectorstore():
-    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-    return VectorStoreRetriever(vectorstore=vectorstore)
-
 def chamar_api_deepseek(chave_api, texto_entrada):
     """
     Realiza a chamada à API DeepSeek para obter a resposta do modelo.

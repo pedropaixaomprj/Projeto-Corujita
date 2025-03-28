@@ -17,8 +17,7 @@ from functions.utils import (
     expandir_query_com_llm,
     recuperar_documentos,
     gerar_prompt_rag,
-    render_chat_history,
-    load_vectorstore
+    render_chat_history
 )
 
 
@@ -54,6 +53,12 @@ DEEPSEEK_API_KEY = st.secrets["DEEPSEEK_API_KEY"]
 
 # Streamlit UI
 st.set_page_config(page_title="Corujita - Chatbot", page_icon="🦉")
+
+
+# Load the VectorStore index from SentenceTransformers
+def load_vectorstore():
+    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    return VectorStoreRetriever(vectorstore=vectorstore)
 
 recuperador = load_vectorstore()
 
