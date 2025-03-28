@@ -5,10 +5,19 @@ import pickle
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores.base import VectorStoreRetriever
 import torch
+from langchain_community.vectorstores import FAISS
 
 # (Optional) Avoid conflicts with Torch modules
 torch.classes.__path__ = []
 
+# Load the VectorStore index from SentenceTransformers
+def load_vectorstore():
+    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    vectorstore = FAISS.load_local("./faiss_index",
+                                    embedding_model,
+                                    allow_dangerous_deserialization=True) # Nesse caso, não é "dangerous" porque eu mesmo gerei os indexes
+    return VectorStoreRetriever(vectorstore=vectorstore)
+    
 def chamar_api_deepseek(chave_api, texto_entrada):
     """
     Realiza a chamada à API DeepSeek para obter a resposta do modelo.
