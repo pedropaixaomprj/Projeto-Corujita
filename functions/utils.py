@@ -6,6 +6,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores.base import VectorStoreRetriever
 from langchain_community.vectorstores import FAISS
 import torch
+import streamlit as st
 
 # (Optional) Avoid conflicts with Torch modules
 torch.classes.__path__ = []
