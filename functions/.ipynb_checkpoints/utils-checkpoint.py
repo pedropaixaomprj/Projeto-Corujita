@@ -2,56 +2,24 @@
 
 import requests
 import pickle
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain.vectorstores.base import VectorStoreRetriever
+from langchain_community.vectorstores import FAISS
 import torch
 import streamlit as st
-import os
-import json
-import time
-from typing import List, Tuple, Optional
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from langchain.schema import Document
-from dotenv import load_dotenv
 
 # (Optional) Avoid conflicts with Torch modules
 torch.classes.__path__ = []
 
-# Carrega o .env uma vez no carregamento do módulo
-load_dotenv(dotenv_path="config/config.env")
-
-#### ANOTHER OPTION IS TO DEFINE a config.py file 
-# putting all config loading/validation there and importing it everywhere
-
-EMBED_URL = os.getenv("EMBED_URL", "https://go-llm.mprj.mp.br/st/embed")
-EMBED_HEADERS = {
-    "Accept": os.getenv("EMBED_ACCEPT", "application/json"),
-    "Content-Type": os.getenv("EMBED_CONTENT_TYPE", "application/json;charset=UTF-8"),
-    "Accept-Encoding": os.getenv("EMBED_ACCEPT_ENCODING", "gzip,deflate"),
-}
-EMBED_TIMEOUT = int(os.getenv("EMBED_REQUEST_TIMEOUT", "60"))
-EMBED_RETRY_MAX = int(os.getenv("EMBED_RETRY_MAX", "3"))
-EMBED_RETRY_BACKOFF = float(os.getenv("EMBED_RETRY_BACKOFF", "1.5"))
-
-# Lê as variáveis de ambiente (globalmente)
-PGHOST = os.getenv("PGHOST")
-PGDATABASE = os.getenv("PGDATABASE")
-PGUSER = os.getenv("PGUSER")
-PGPASSWORD = os.getenv("PGPASSWORD")
-PGPORT = os.getenv("PGPORT", "5432")
-TABLE_NAME = os.getenv("PGVECTOR_TABLE", "nlp.faq_embeddings")
-DISTANCE = os.getenv("PGVECTOR_DISTANCE", "cosine").lower()
-
-# --- Lê e valida variáveis obrigatórias ---
-required_vars = ["PGHOST", "PGDATABASE", "PGUSER", "PGPASSWORD"]
-missing = [v for v in required_vars if not os.getenv(v)]
-
-if missing:
-    raise ValueError(
-        f"As seguintes variáveis obrigatórias não foram definidas no .env: {', '.join(missing)}"
-    )
-
-# DeepSeek envs are written in GitHub
-
+# Load the VectorStore index from SentenceTransformers
+@st.cache_resource
+def load_vectorstore():
+    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    vectorstore = FAISS.load_local("./faiss_index",
+                                    embedding_model,
+                                    allow_dangerous_deserialization=True) # Nesse caso, não é "dangerous" porque eu mesmo gerei os indexes
+    return VectorStoreRetriever(vectorstore=vectorstore)
+    
 def chamar_api_deepseek(chave_api, texto_entrada):
     """
     Realiza a chamada à API DeepSeek para obter a resposta do modelo.
@@ -110,19 +78,16 @@ def recuperar_documentos(chave_api, query_original, recuperador, expandir=False,
     query_final = expandir_query_com_llm(chave_api, query_original) if expandir else query_original
 
     # Obtém as k referências com seus respectivos scores
-    referencias_com_score = recuperador.similarity_search_with_score(query_final, k=k)
+    referencias_com_score = recuperador.vectorstore.similarity_search_with_score(query_final, k=k)
     print(f'\nReferências com score: {referencias_com_score}\n')
 
     # Dicionário para armazenar respostas únicas com base no score
     respostas_unicas = {}
     
     # Filtra e armazena apenas os documentos com score acima do limiar
-
-    #### ATENÇÃO! TEREMOS QUE AJUSTAR ESSE LIMIAR COM TESTES!
-
     for doc, score in referencias_com_score:
-        if score <= limiar:  # Aqui é menor porque estamos usando distância de cosseno (quanto melhor, menor)
-            resposta_doc = doc.metadata.get("resposta")
+        if score >= limiar:  # Ajuste se o score for inverso (distância) ou direto (similaridade)
+            resposta_doc = doc.metadata.get("Resposta")
             # Se ainda não existe essa resposta_doc ou encontramos score maior agora, armazena
             if resposta_doc and (resposta_doc not in respostas_unicas or respostas_unicas[resposta_doc][1] < score):
                 respostas_unicas[resposta_doc] = (doc, score)
@@ -141,7 +106,7 @@ def gerar_prompt_rag(pergunta, documentos=None, historico_chat=None):
     if documentos:
         partes_contexto = []
         for doc in documentos:
-            conteudo = doc.metadata.get("resposta", "Não foi encontrada informação relevante")
+            conteudo = doc.metadata.get("Resposta", "Não foi encontrada informação relevante")
             partes_contexto.append(conteudo)
         contexto_docs = "\n\n".join(partes_contexto)
     
@@ -228,93 +193,3 @@ def render_chat_history(container, chat_history, processing=False):
 
     chat_history_html += '</div>'
     container.html(chat_history_html)
-
-
-# ==== Adições para pgvector =====
-
-def fetch_embedding(text: str, session: Optional[requests.Session] = None) -> List[float]:
-    if session is None:
-        session = requests.Session()
-    payload = {"text": text}
-    last_err = None
-    for attempt in range(EMBED_RETRY_MAX):
-        try:
-            r = session.post(EMBED_URL, headers=EMBED_HEADERS, json=payload, timeout=EMBED_TIMEOUT, verify=False)
-            r.raise_for_status()
-            data = r.json()
-            if not isinstance(data, list):
-                raise ValueError(f"Resposta inesperada do embed: {type(data)}")
-            return [float(x) for x in data]
-        except Exception as e:
-            last_err = e
-            if attempt < EMBED_RETRY_MAX - 1:
-                time.sleep(EMBED_RETRY_BACKOFF ** (attempt + 1))
-    raise RuntimeError(f"Falha ao obter embedding. Último erro: {last_err}")
-
-
-@st.cache_resource
-def get_pg_conn():
-    """
-    Retorna uma conexão persistente com o PostgreSQL, cacheada pelo Streamlit.
-    Garante que a conexão seja criada apenas uma vez por sessão.
-    """
-    os.environ["CURL_CA_BUNDLE"] = os.getenv("CURL_CA_BUNDLE", "")
-    os.environ["REQUESTS_CA_BUNDLE"] = os.getenv("REQUESTS_CA_BUNDLE", "")
-
-    try:
-        conn = psycopg2.connect(
-            host=PGHOST,
-            database=PGDATABASE,
-            user=PGUSER,
-            password=PGPASSWORD,
-            port=PGPORT,
-        )
-        conn.autocommit = True
-        print(f"[INFO] Conectado ao PostgreSQL em {PGHOST}:{PGPORT} ({PGDATABASE})")
-        return conn
-    except Exception as e:
-        raise ConnectionError(f"Falha ao conectar ao PostgreSQL: {e}")
-
-class PgVectorSimpleRetriever:
-    """
-    Retriver simples para pgvector. Implementa similarity_search_with_score(query, k).
-    Retorna lista de (Document, distance). Menor distância = melhor.
-    """
-
-    def __init__(self, k: int = 5, table_name: str = None):
-        self.k = k
-        self._conn = get_pg_conn()
-        self._table = table_name or os.getenv("PGVECTOR_TABLE", "nlp.faq_embeddings")
-
-    def similarity_search_with_score(self, query: str, k: Optional[int] = None) -> List[Tuple[Document, float]]:
-        k = k or self.k
-        qvec = fetch_embedding(query)
-        qlit = "[" + ",".join(f"{float(x):.8f}" for x in qvec) + "]"
-
-        sql = f"""
-            SELECT 
-                pergunta_id, pergunta_var_id, pergunta, resposta, ultima_atualizacao,
-                embedding_st <-> %s::vector AS distance
-            FROM {self._table}
-            ORDER BY distance ASC
-            LIMIT %s;
-        """
-        with self._conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(sql, (qlit, k))
-            rows = cur.fetchall()
-
-        results = []
-        for r in rows:
-            metadata = {
-                "pergunta_id": r["pergunta_id"],
-                "pergunta_var_id": r["pergunta_var_id"],
-                "ultima_atualizacao": str(r["ultima_atualizacao"]) if r["ultima_atualizacao"] else None,
-                "resposta": r["resposta"],
-            }
-            doc = Document(page_content=r["pergunta"], metadata=metadata)
-            results.append((doc, float(r["distance"])))
-        return results
-
-@st.cache_resource
-def load_pg_retriever(k_default: int = 5):
-    return PgVectorSimpleRetriever(k=k_default, table_name=os.getenv("PGVECTOR_TABLE", "nlp.faq_embeddings"))

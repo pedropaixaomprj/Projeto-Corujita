@@ -1,16 +1,34 @@
-# Core libraries
+# -----------------------------
+# Core App & Utilities
+# -----------------------------
 streamlit
 requests
 python-dotenv
 torch
 sentence-transformers
 
-# LangChain and related libraries
+# -----------------------------
+# Database & Vector Search
+# -----------------------------
+psycopg2-binary           # PostgreSQL connector
+pgvector                  # Optional helper for pgvector types in Python
+
+# -----------------------------
+# LangChain Ecosystem
+# -----------------------------
 langchain
+langchain-core
+langchain-community
+langchain-huggingface
 
-# FAISS for vector similarity search
-faiss-cpu
+# -----------------------------
+# Optional Extras / Streamlit Components
+# -----------------------------
+streamlit-extras          # For switch_page_button and stylable_container
 
-# If these are custom or third-party modules available via PyPI:
-langchain_community
-langchain_huggingface
+# -----------------------------
+# Notes:
+# - FAISS removed (no longer used)
+# - We won't need langchain-postgres unless you migrate to LangChain PGVector
+# - pgvector is optional but recommended if you handle vector types in Python
+# -----------------------------
