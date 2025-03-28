@@ -2,6 +2,7 @@
 
 import requests
 import pickle
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores.base import VectorStoreRetriever
 import torch
 
