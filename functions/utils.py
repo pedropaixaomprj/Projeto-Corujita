@@ -4,13 +4,14 @@ import requests
 import pickle
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores.base import VectorStoreRetriever
-import torch
 from langchain_community.vectorstores import FAISS
+import torch
 
 # (Optional) Avoid conflicts with Torch modules
 torch.classes.__path__ = []
 
 # Load the VectorStore index from SentenceTransformers
+@st.cache_resource
 def load_vectorstore():
     embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
     vectorstore = FAISS.load_local("./faiss_index",
