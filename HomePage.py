@@ -59,7 +59,7 @@ with stylable_container(
     }
     """
 ):
-    pergunta = st.text_input("", placeholder="Escreva sua dúvida aqui:")
+    pergunta = st.text_input("pergunta_chat", placeholder="Escreva sua dúvida aqui:", label_visibility="collapsed")
 
 # --- Stylable container for the "Iniciar Conversa" button ---
 # Use columns to center the "Iniciar Conversa" button
