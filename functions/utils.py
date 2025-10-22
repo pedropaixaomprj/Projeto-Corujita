@@ -540,7 +540,7 @@ def gerar_prompt_rag(
         f"{historico_txt}\n\n"
         "### Mensagem do usuário\n"
         f"{pergunta}\n\n"
-        "Se a mensagem do usuário for uma saudação ou small-talk, relembre sua função (asssistente virtual do GATE/MPRJ) e pergunte qual é a dúvida técnica.\n"
+        "Se a mensagem do usuário for uma saudação ou small-talk, pergunte qual é a dúvida técnica.\n"
         "Se não houver informação suficiente nos documentos para responder, diga:\n"
         "\"Entre em contato com a secretaria do GATE por meio do Microsoft Teams para maiores informações.\"\n\n"
         "### Sua resposta:"
