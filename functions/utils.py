@@ -591,6 +591,13 @@ def fetch_embedding(text: str, session: Optional[requests.Session] = None) -> Li
                 time.sleep(EMBED_RETRY_BACKOFF ** (attempt + 1))
     raise RuntimeError(f"Falha ao obter embedding. Último erro: {last_err}")
 
+
+######## IMPORTANTE!
+######## https://docs.streamlit.io/develop/tutorials/databases/postgresql
+######## https://discuss.streamlit.io/t/error-deploying-with-psycopg2/30455
+######## We are unable to host a PostgreSQL server on Streamlit Cloud
+######## We must connect to a remote PostGreSQL database from Streamlit Cloud
+
 @st.cache_resource
 def get_pg_conn():
     """
