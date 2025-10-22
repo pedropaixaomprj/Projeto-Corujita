@@ -1,7 +1,6 @@
 # -----------------------------
 # Core App & Utilities
 # -----------------------------
-streamlit
 requests
 python-dotenv
 torch
@@ -24,11 +23,6 @@ langchain-huggingface
 # -----------------------------
 # Optional Extras / Streamlit Components
 # -----------------------------
+streamlit
 streamlit-extras          # For switch_page_button and stylable_container
 
-# -----------------------------
-# Notes:
-# - FAISS removed (no longer used)
-# - We won't need langchain-postgres unless you migrate to LangChain PGVector
-# - pgvector is optional but recommended if you handle vector types in Python
-# -----------------------------

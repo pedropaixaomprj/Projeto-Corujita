@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_extras.switch_page_button import switch_page
+# from streamlit_extras.switch_page_button import switch_page
 from streamlit_extras.stylable_container import stylable_container
 
 st.set_page_config(
