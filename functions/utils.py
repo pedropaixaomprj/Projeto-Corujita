@@ -14,7 +14,7 @@ import streamlit as st
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 # (Optional) Avoid conflicts with Torch modules
 torch.classes.__path__ = []
