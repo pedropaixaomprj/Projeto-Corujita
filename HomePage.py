@@ -88,4 +88,4 @@ with col_center:
 
 if iniciar:
     st.session_state["pending_user_message"] = pergunta
-    st.switch_page("Converse com a Corujita")
+    st.switch_page("pages/Converse com a Corujita.py")
