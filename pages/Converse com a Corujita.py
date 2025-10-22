@@ -33,10 +33,10 @@ def processa_resposta(entrada: str) -> str:
             os.environ.get("DEEPSEEK_API_KEY",""),
             entrada,
             recuperador,
-            expandir=True,
+            expandir=True, # atenção! expandir cria uma query de busca com 10 sinônimos separados por ponto (em uma query única). Por isso, se usar expandir=True, melhor usar rerank_method = deepseek. 
             k_recall=5,
             k_final=3,
-            rerank_method="crossencoder",
+            rerank_method="deepseek", # crossencoder ou deepseek
             min_score_reranking=0.0,
         )
     except Exception as e:
