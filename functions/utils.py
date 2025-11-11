@@ -130,7 +130,7 @@ def expandir_query_com_llm(chave_api, query_original):
     """
     prompt = f"""
 Dado o contexto de um assistente virtual para o sistema Nova SAT do Ministério Público do Estado do Rio de Janeiro (MPRJ), 
-expanda a seguinte pergunta do usuário gerando 10 sinônimos, reformulações e variações que poderiam ter sido feitas por outros usuários no passado. 
+expanda a seguinte pergunta do usuário gerando 5 sinônimos, reformulações e variações que poderiam ter sido feitas por outros usuários no passado. 
 
 O objetivo é melhorar a recuperação da resposta correta, garantindo que perguntas semelhantes sejam identificadas como equivalentes. 
 Priorize termos técnicos e expressões usadas no contexto jurídico e administrativo do MPRJ.
